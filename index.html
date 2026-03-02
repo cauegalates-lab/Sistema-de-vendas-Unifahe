@@ -3,74 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Vendas e Comissões - 2026</title>
+    <title>Portal de Gestão Acadêmica - 2026</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <style>
-        :root { --navy: #001f3f; --blue: #007bff; --green: #28a745; --yellow: #ffc107; --red: #dc3545; --gray: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--gray); margin: 0; padding: 20px; }
-        .container { max-width: 1400px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        :root { 
+            --primary: #002b5c; /* Azul Marinho Acadêmico */
+            --secondary: #546e7a;
+            --accent: #d4af37; /* Dourado suave para detalhes */
+            --success: #1b5e20;
+            --danger: #b71c1c;
+            --bg: #f4f7f9;
+            --white: #ffffff;
+        }
+
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1400px; margin: auto; background: var(--white); padding: 30px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--primary); }
         
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
-        .tab-btn { padding: 12px 25px; border: none; background: #eee; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; }
-        .tab-btn.active { background: var(--navy); color: white; }
-        .tab-content { display: none; padding: 20px 0; }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        header h1 { color: var(--primary); margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+        header p { color: var(--secondary); margin: 5px 0 0; font-style: italic; }
+
+        /* Navegação */
+        .tabs { display: flex; gap: 2px; margin-bottom: 25px; background: #e0e6ed; padding: 5px; border-radius: 4px; }
+        .tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-weight: 600; color: var(--primary); border-radius: 4px; transition: 0.3s; flex: 1; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-btn:hover:not(.active) { background: #d1d9e2; }
+
+        .tab-content { display: none; animation: fadeIn 0.4s; }
         .tab-content.active { display: block; }
 
-        .resumo-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
-        .resumo-table th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #dee2e6; }
-        .resumo-table td { padding: 12px; border-bottom: 1px solid #eee; }
-        .total-row { font-weight: bold; background: #e9ecef; }
-        .comissao-tag { font-size: 11px; color: #666; display: block; margin-top: 4px; }
+        /* Tabelas */
+        .table-card { background: var(--white); border: 1px solid #e0e6ed; border-radius: 4px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f9fb; color: var(--primary); padding: 15px; text-align: center; border-bottom: 2px solid #e0e6ed; text-transform: uppercase; font-size: 11px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
+        tr:nth-child(even) { background-color: #fafbfc; }
+        .total-row { background: var(--primary) !important; color: white; font-weight: bold; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        /* Formulário Acadêmico */
+        .form-section { background: #fdfdfd; padding: 20px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; }
         .field { display: flex; flex-direction: column; }
-        label { font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px; text-transform: uppercase; }
-        input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        label { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px; transition: 0.2s; }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(0,43,92,0.1); }
         
-        #btnSalvar { width: 100%; background: var(--green); color: white; border: none; padding: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-        #btnExportar { background: var(--blue); color: white; border: none; padding: 20px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; font-size: 18px; }
+        .btn-main { background: var(--primary); color: white; border: none; padding: 15px 30px; font-weight: bold; border-radius: 3px; cursor: pointer; width: 100%; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-main:hover { opacity: 0.9; }
+        .btn-export { background: var(--success); color: white; border: none; padding: 25px; font-size: 18px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; max-width: 400px; }
 
-        .table-wrapper { overflow-x: auto; margin-top: 20px; border: 1px solid #eee; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 1200px; font-size: 12px; }
-        th { background: var(--navy); color: white; padding: 12px; }
-        td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
-        .btn-acao { border: none; padding: 5px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; }
+        .btn-acao { border: none; padding: 6px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; margin: 0 2px; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="color: var(--navy); margin-top: 0;">SISTEMA DE GESTÃO COMERCIAL 2026</h2>
+    <header>
+        <h1>Portal de Gestão Acadêmica e Comercial</h1>
+        <p>Sistema Unificado de Registros - Ano Letivo 2026</p>
+    </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="openTab('tab-vendas')">Lançar Vendas</button>
-        <button class="tab-btn" onclick="openTab('tab-resumo')">Resumo & Comissões</button>
-        <button class="tab-btn" onclick="openTab('tab-backup')">Extrair Planilha</button>
+        <button class="tab-btn active" onclick="openTab('tab-vendas')">REGISTRO DE MATRÍCULAS</button>
+        <button class="tab-btn" onclick="openTab('tab-resumo')">RESUMO DE COMISSÕES</button>
+        <button class="tab-btn" onclick="openTab('tab-backup')">ARQUIVO E BACKUP</button>
     </div>
 
     <div id="tab-vendas" class="tab-content active">
-        <form id="vendaForm">
-            <div class="form-grid">
-                <div class="field"><label>Dia</label><input type="number" id="dia" required></div>
-                <div class="field"><label>Mês</label><input type="number" id="mes" required></div>
-                <div class="field"><label>Ano</label><input type="number" id="ano" value="2026"></div>
-                <div class="field"><label>Vendedor</label><input type="text" id="vendedor" required></div>
-                <div class="field"><label>Aluno</label><input type="text" id="aluno" required></div>
-                <div class="field"><label>Pgto</label><select id="tipoPgto"><option value="BOLETO">BOLETO</option><option value="CARTÃO">CARTÃO</option></select></div>
-                <div class="field"><label>Taxa R$</label><input type="text" id="taxa" placeholder="0.00"></div>
-                <div class="field"><label>Boleto R$</label><input type="text" id="boleto" placeholder="0.00"></div>
-                <div class="field"><label>Parc.</label><input type="number" id="parcelas" value="1"></div>
-                <div class="field"><label>Cartão R$</label><input type="text" id="cartao" placeholder="0.00"></div>
-                <div class="field"><label>Curso</label><input type="text" id="curso"></div>
-                <div class="field"><label>Cidade</label><input type="text" id="cidade"></div>
-                <div class="field"><label>UF</label><input type="text" id="estado" maxlength="2"></div>
-                <div class="field"><label>Origem</label><input type="text" id="origem"></div>
-            </div>
-            <button type="submit" id="btnSalvar">SALVAR NO BANCO DE DADOS</button>
-        </form>
+        <div class="form-section">
+            <form id="vendaForm">
+                <div class="form-grid">
+                    <div class="field"><label>Dia</label><input type="number" id="dia" required></div>
+                    <div class="field"><label>Mês</label><input type="number" id="mes" required></div>
+                    <div class="field"><label>Ano</label><input type="number" id="ano" value="2026"></div>
+                    <div class="field"><label>Vendedor(a)</label><input type="text" id="vendedor" required></div>
+                    <div class="field"><label>Nome do Aluno</label><input type="text" id="aluno" required></div>
+                    <div class="field"><label>Forma Pgto</label><select id="tipoPgto"><option value="BOLETO">BOLETO</option><option value="CARTÃO">CARTÃO</option></select></div>
+                    <div class="field"><label>Taxa R$</label><input type="text" id="taxa" value="0.00"></div>
+                    <div class="field"><label>Boleto R$</label><input type="text" id="boleto" value="0.00"></div>
+                    <div class="field"><label>Parcelas</label><input type="number" id="parcelas" value="1"></div>
+                    <div class="field"><label>Cartão R$</label><input type="text" id="cartao" value="0.00"></div>
+                    <div class="field"><label>Curso</label><input type="text" id="curso"></div>
+                    <div class="field"><label>Cidade</label><input type="text" id="cidade"></div>
+                    <div class="field"><label>UF</label><input type="text" id="estado" maxlength="2"></div>
+                    <div class="field"><label>Origem</label><input type="text" id="origem"></div>
+                </div>
+                <button type="submit" id="btnSalvar" class="btn-main">EFETUAR REGISTRO NO SISTEMA</button>
+            </form>
+        </div>
 
-        <div class="table-wrapper">
+        <div class="table-card">
             <table id="tabelaVendas">
                 <thead>
                     <tr>
@@ -83,23 +108,26 @@
     </div>
 
     <div id="tab-resumo" class="tab-content">
-        <h3>Resumo de Vendas e Comissões</h3>
-        <table class="resumo-table">
-            <thead>
-                <tr>
-                    <th>Vendedor</th>
-                    <th>Total Cartão (Valor Líquido)</th>
-                    <th>Total Boletos (Quantidade)</th>
-                    <th>Comissão de Boletos (R$ 20/un)</th>
-                </tr>
-            </thead>
-            <tbody id="corpoResumo"></tbody>
-        </table>
+        <h3 style="color:var(--primary); text-align:center">RELATÓRIO FINANCEIRO DE COMISSIONAMENTO</h3>
+        <div class="table-card">
+            <table class="resumo-table">
+                <thead>
+                    <tr>
+                        <th>Vendedor(a)</th>
+                        <th>Total Cartão (Valor Bruto)</th>
+                        <th>Total Boletos (Quantidade)</th>
+                        <th>Comissão Boletos (R$ 20,00/un)</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoResumo"></tbody>
+            </table>
+        </div>
     </div>
 
-    <div id="tab-backup" class="tab-content" style="text-align: center; padding: 50px;">
-        <h3>Gerar Cópia de Segurança das Vendas</h3>
-        <button id="btnExportar" onclick="exportarPlanilha()">BAIXAR PLANILHA AGORA</button>
+    <div id="tab-backup" class="tab-content" style="text-align: center; padding: 60px 0;">
+        <h3 style="color:var(--primary)">EXPORTAÇÃO DE DADOS INSTITUCIONAIS</h3>
+        <p style="color:var(--secondary); margin-bottom: 30px;">Gere um arquivo consolidado em formato .CSV para auditoria e backup.</p>
+        <button onclick="exportarExcel()" class="btn-export">EXTRAIR PLANILHA OFICIAL</button>
     </div>
 
 </div>
@@ -126,7 +154,7 @@
         event.currentTarget.classList.add('active');
     }
 
-    const paraNum = (val) => parseFloat(val?.toString().replace(',', '.')) || 0;
+    const paraNum = (v) => parseFloat(v?.toString().replace(',', '.')) || 0;
 
     function atualizarResumo() {
         const totais = {};
@@ -134,28 +162,26 @@
             const vend = v.vendedor.toUpperCase().trim();
             const valC = paraNum(v.cartao);
             const isBoleto = v.tipoPgto === "BOLETO" ? 1 : 0;
-
-            if (!totais[vend]) totais[vend] = { cartaoTotal: 0, qtdBoleto: 0 };
-            totais[vend].cartaoTotal += valC;
-            totais[vend].qtdBoleto += isBoleto;
+            if (!totais[vend]) totais[vend] = { cartao: 0, boletos: 0 };
+            totais[vend].cartao += valC;
+            totais[vend].boletos += isBoleto;
         });
 
         const corpo = document.getElementById('corpoResumo');
         corpo.innerHTML = "";
-        
         Object.keys(totais).sort().forEach(nome => {
-            const comissaoBoleto = totais[nome].qtdBoleto * 20;
+            const comissao = totais[nome].boletos * 20;
             corpo.innerHTML += `
                 <tr>
-                    <td>${nome}</td>
-                    <td>R$ ${totais[nome].cartaoTotal.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                    <td>${totais[nome].qtdBoleto} boleto(s)</td>
-                    <td style="font-weight:bold; color:var(--green)">R$ ${comissaoBoleto.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+                    <td style="font-weight:bold; color:var(--primary)">${nome}</td>
+                    <td>R$ ${totais[nome].cartao.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+                    <td>${totais[nome].boletos} un.</td>
+                    <td style="font-weight:bold; color:var(--success)">R$ ${comissao.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
                 </tr>`;
         });
     }
 
-    window.exportarPlanilha = () => {
+    window.exportarExcel = () => {
         let csv = "\ufeffDia;Mes;Ano;Vendedor;Aluno;Pgto;Taxa;Boleto;Parcelas;Cartao;Curso;Cidade;UF;Origem\n";
         vendasAtuais.forEach(v => {
             const f = (t) => t ? t.toString().replace(/;/g, '-') : "";
@@ -163,7 +189,7 @@
         });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        link.download = `Vendas_Oficial_2026.csv`;
+        link.download = `Relatorio_Academico_2026.csv`;
         link.click();
     };
 
@@ -182,7 +208,7 @@
         if (editId) {
             await db.collection("vendas").doc(editId).update(dados);
             editId = null;
-            document.getElementById('btnSalvar').innerText = "SALVAR NO BANCO DE DADOS";
+            document.getElementById('btnSalvar').innerText = "EFETUAR REGISTRO NO SISTEMA";
         } else {
             await db.collection("vendas").add(dados);
         }
@@ -204,7 +230,7 @@
         openTab('tab-vendas');
     };
 
-    window.excluirVenda = async (id) => { if(confirm("Excluir?")) await db.collection("vendas").doc(id).delete(); };
+    window.excluirVenda = async (id) => { if(confirm("Deseja remover este registro do sistema acadêmico?")) await db.collection("vendas").doc(id).delete(); };
 
     db.collection("vendas").orderBy("dataRef", "desc").onSnapshot((snap) => {
         const corpo = document.querySelector("#tabelaVendas tbody");
@@ -217,8 +243,8 @@
                 <td>${v.dia}/${v.mes}</td><td>${v.vendedor.toUpperCase()}</td><td>${v.aluno}</td><td>${v.tipoPgto}</td>
                 <td>${v.taxa}</td><td>${v.boleto}</td><td>${v.parcelas}</td><td>${v.cartao}</td><td>${v.curso}</td>
                 <td>
-                    <button class="btn-acao" style="background:var(--yellow)" onclick="prepararEdicao('${id}','${json}')">ED</button>
-                    <button class="btn-acao" style="background:var(--red);color:white" onclick="excluirVenda('${id}')">X</button>
+                    <button class="btn-acao" style="background:var(--yellow)" onclick="prepararEdicao('${id}','${json}')">EDITAR</button>
+                    <button class="btn-acao" style="background:var(--danger);color:white" onclick="excluirVenda('${id}')">X</button>
                 </td>
             </tr>`;
         });
