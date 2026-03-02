@@ -3,51 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Vendas Oficial - 2026</title>
+    <title>Sistema de Vendas Profissional - 2026</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        :root { --navy: #001f3f; --green: #28a745; --yellow: #ffc107; --red: #dc3545; --blue: #007bff; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 1300px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: var(--navy); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        :root { --navy: #001f3f; --green: #28a745; --yellow: #ffc107; --red: #dc3545; --blue: #007bff; --purple: #6f42c1; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 1400px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        
+        /* Dashboard Estilo */
+        .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .dash-card { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .dash-card h4 { margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; font-size: 14px; text-transform: uppercase; }
+        
+        .ranking-list { max-height: 200px; overflow-y: auto; font-size: 13px; }
+        .vendedor-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f9f9f9; }
+        .vendedor-item span { font-weight: bold; color: var(--navy); }
+
+        /* Formulário */
+        h2 { color: var(--navy); font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 25px; }
         .field { display: flex; flex-direction: column; }
-        label { font-size: 10px; font-weight: bold; color: #666; margin-bottom: 3px; text-transform: uppercase; }
-        input, select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
-        .btn-group { display: flex; gap: 10px; grid-column: 1 / -1; }
-        #btnSalvar { flex: 2; background: var(--green); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        label { font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px; text-transform: uppercase; }
+        input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; outline: none; }
+        input:focus { border-color: var(--blue); }
+        
+        .btn-group { display: flex; gap: 10px; grid-column: 1 / -1; margin-top: 10px; }
+        #btnSalvar { flex: 2; background: var(--green); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; }
         #btnExportar { flex: 1; background: var(--blue); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .table-wrapper { overflow-x: auto; margin-top: 20px; }
+        #btnSalvar:hover, #btnExportar:hover { opacity: 0.9; }
+
+        /* Tabela */
+        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; min-width: 1200px; font-size: 12px; }
-        th { background: var(--navy); color: white; padding: 10px; border: 1px solid #003366; }
-        td { padding: 8px; border: 1px solid #eee; text-align: center; }
-        .btn-acao { border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; }
+        th { background: var(--navy); color: white; padding: 12px; text-align: center; position: sticky; top: 0; }
+        td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+        tr:hover { background: #fdfdfd; }
+        .btn-acao { border: none; padding: 5px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Painel de Controle de Vendas</h2>
+    <h2 style="margin-top:0">📊 Painel de Desempenho Real-Time</h2>
+    
+    <div class="dashboard-container">
+        <div class="dash-card">
+            <h4 style="color: var(--blue);">💳 Total Cartão por Vendedor</h4>
+            <div id="listaCartao" class="ranking-list">Carregando...</div>
+            <canvas id="graficoCartao" height="150"></canvas>
+        </div>
+
+        <div class="dash-card">
+            <h4 style="color: var(--purple);">📄 Total Boleto por Vendedor</h4>
+            <div id="listaBoleto" class="ranking-list">Carregando...</div>
+            <canvas id="graficoBoleto" height="150"></canvas>
+        </div>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+    <h2>📝 Lançamento de Vendas</h2>
     <form id="vendaForm">
         <div class="form-grid">
             <div class="field"><label>Dia</label><input type="number" id="dia" required></div>
             <div class="field"><label>Mês</label><input type="number" id="mes" required></div>
             <div class="field"><label>Ano</label><input type="number" id="ano" value="2026"></div>
-            <div class="field"><label>Vendedor</label><input type="text" id="vendedor" required></div>
-            <div class="field"><label>Aluno</label><input type="text" id="aluno" required></div>
-            <div class="field"><label>Pgto</label><select id="tipoPgto"><option value="BOLETO">BOLETO</option><option value="CARTÃO">CARTÃO</option></select></div>
-            <div class="field"><label>Taxa R$</label><input type="text" id="taxa"></div>
-            <div class="field"><label>Boleto R$</label><input type="text" id="boleto"></div>
+            <div class="field"><label>Vendedor</label><input type="text" id="vendedor" required placeholder="Nome"></div>
+            <div class="field"><label>Aluno</label><input type="text" id="aluno" required placeholder="Nome do Aluno"></div>
+            <div class="field">
+                <label>Tipo Pgto</label>
+                <select id="tipoPgto">
+                    <option value="CARTÃO">CARTÃO</option>
+                    <option value="BOLETO">BOLETO</option>
+                </select>
+            </div>
+            <div class="field"><label>Taxa R$</label><input type="text" id="taxa" placeholder="0.00"></div>
+            <div class="field"><label>Boleto R$</label><input type="text" id="boleto" placeholder="0.00"></div>
             <div class="field"><label>Parc.</label><input type="number" id="parcelas" value="1"></div>
-            <div class="field"><label>Cartão R$</label><input type="text" id="cartao"></div>
+            <div class="field"><label>Cartão R$</label><input type="text" id="cartao" placeholder="0.00"></div>
             <div class="field"><label>Curso</label><input type="text" id="curso"></div>
             <div class="field"><label>Cidade</label><input type="text" id="cidade"></div>
-            <div class="field"><label>UF</label><input type="text" id="estado"></div>
+            <div class="field"><label>UF</label><input type="text" id="estado" maxlength="2"></div>
             <div class="field"><label>Origem</label><input type="text" id="origem"></div>
+            
             <div class="btn-group">
-                <button type="submit" id="btnSalvar">SALVAR NO SISTEMA</button>
-                <button type="button" id="btnExportar" onclick="exportarExcel()">EXTRAIR PLANILHA (Excel)</button>
+                <button type="submit" id="btnSalvar">SALVAR VENDA</button>
+                <button type="button" id="btnExportar" onclick="exportarExcel()">BAIXAR EXCEL (CSV)</button>
             </div>
         </div>
     </form>
@@ -66,7 +110,7 @@
 </div>
 
 <script>
-    // Suas chaves do Firebase
+    // Configurações do seu Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDDFh0bzpV0aMvMcp6Dp7626EeJdXbstlw",
       authDomain: "sistema-de-vendas-8cdb9.firebaseapp.com",
@@ -80,7 +124,58 @@
     const db = firebase.firestore();
     let editId = null;
     let vendasAtuais = [];
+    let chartCartao = null;
+    let chartBoleto = null;
 
+    // Função para converter valores de texto para número
+    const paraNumero = (val) => {
+        if (!val) return 0;
+        return parseFloat(val.toString().replace(',', '.')) || 0;
+    };
+
+    // Atualiza Dashboards e Gráficos
+    function atualizarDashboards() {
+        const totaisCartao = {};
+        const totaisBoleto = {};
+        
+        vendasAtuais.forEach(v => {
+            const vend = v.vendedor.toUpperCase().trim();
+            totaisCartao[vend] = (totaisCartao[vend] || 0) + paraNumero(v.cartao);
+            totaisBoleto[vend] = (totaisBoleto[vend] || 0) + paraNumero(v.boleto);
+        });
+
+        // Atualizar Listas Visuais
+        renderLista('listaCartao', totaisCartao, 'R$');
+        renderLista('listaBoleto', totaisBoleto, 'R$');
+
+        // Atualizar Gráficos
+        chartCartao = renderGrafico('graficoCartao', chartCartao, totaisCartao, 'Total Cartão', '#007bff');
+        chartBoleto = renderGrafico('graficoBoleto', chartBoleto, totaisBoleto, 'Total Boleto', '#6f42c1');
+    }
+
+    function renderLista(id, dados, prefixo) {
+        const div = document.getElementById(id);
+        const ordenado = Object.keys(dados).sort((a,b) => dados[b] - dados[a]);
+        div.innerHTML = ordenado.map(n => `
+            <div class="vendedor-item">${n} <span>${prefixo} ${dados[n].toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div>
+        `).join('') || "Sem dados";
+    }
+
+    function renderGrafico(canvasId, instance, dados, label, cor) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        if (instance) instance.destroy();
+        const nomes = Object.keys(dados).sort((a,b) => dados[b] - dados[a]).slice(0, 5); // Top 5
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: nomes,
+                datasets: [{ label: label, data: nomes.map(n => dados[n]), backgroundColor: cor }]
+            },
+            options: { indexAxis: 'y', scales: { x: { beginAtZero: true } } }
+        });
+    }
+
+    // Ações do Formulário
     document.getElementById('vendaForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnSalvar');
@@ -93,10 +188,10 @@
             vendedor: document.getElementById('vendedor').value,
             aluno: document.getElementById('aluno').value,
             tipoPgto: document.getElementById('tipoPgto').value,
-            taxa: document.getElementById('taxa').value || "",
-            boleto: document.getElementById('boleto').value || "",
+            taxa: document.getElementById('taxa').value || "0",
+            boleto: document.getElementById('boleto').value || "0",
             parcelas: document.getElementById('parcelas').value || "1",
-            cartao: document.getElementById('cartao').value || "",
+            cartao: document.getElementById('cartao').value || "0",
             curso: document.getElementById('curso').value || "",
             cidade: document.getElementById('cidade').value || "",
             estado: document.getElementById('estado').value || "",
@@ -108,40 +203,26 @@
             if (editId) {
                 await db.collection("vendas").doc(editId).update(dados);
                 editId = null;
-                btn.innerText = "SALVAR NO SISTEMA";
-                btn.style.background = "#28a745";
+                btn.innerText = "SALVAR VENDA";
+                btn.style.background = "var(--green)";
             } else {
                 await db.collection("vendas").add(dados);
             }
             e.target.reset();
             document.getElementById('ano').value = "2026";
-        } catch (err) { alert(err.message); }
+        } catch (err) { alert("Erro: " + err.message); }
         btn.disabled = false;
     });
 
-    // CORREÇÃO DA EXPORTAÇÃO PARA EXCEL
     window.exportarExcel = () => {
-        if (vendasAtuais.length === 0) return alert("Nenhuma venda para exportar.");
-        
-        // Cabeçalho da planilha
-        let csv = "Data,Vendedor,Aluno,Pgto,Taxa,Boleto,Parcelas,Cartao,Curso,Cidade,UF,Origem\n";
-        
+        let csv = "\ufeffData,Vendedor,Aluno,Pgto,Taxa,Boleto,Parcelas,Cartao,Curso,Cidade,UF,Origem\n";
         vendasAtuais.forEach(v => {
-            // Garante que campos vazios não quebrem a linha e remove vírgulas internas que possam existir nos nomes
-            const limpar = (txt) => txt ? txt.toString().replace(/,/g, '.') : "";
-            
-            csv += `${limpar(v.dia)}/${limpar(v.mes)}/${limpar(v.ano)},` +
-                   `${limpar(v.vendedor)},${limpar(v.aluno)},${limpar(v.tipoPgto)},` +
-                   `${limpar(v.taxa)},${limpar(v.boleto)},${limpar(v.parcelas)},` +
-                   `${limpar(v.cartao)},${limpar(v.curso)},${limpar(v.cidade)},` +
-                   `${limpar(v.estado)},${limpar(v.origem)}\n`;
+            const l = (t) => t ? t.toString().replace(/,/g, '.') : "";
+            csv += `${l(v.dia)}/${l(v.mes)}/${l(v.ano)},${l(v.vendedor)},${l(v.aluno)},${l(v.tipoPgto)},${l(v.taxa)},${l(v.boleto)},${l(v.parcelas)},${l(v.cartao)},${l(v.curso)},${l(v.cidade)},${l(v.estado)},${l(v.origem)}\n`;
         });
-
-        // Adiciona o marcador UTF-8 para o Excel reconhecer acentos corretamente
-        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Vendas_Oficial_${new Date().toLocaleDateString()}.csv`;
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        link.download = `Relatorio_Geral_Vendas.csv`;
         link.click();
     };
 
@@ -153,30 +234,29 @@
         document.getElementById('vendedor').value = d.vendedor;
         document.getElementById('aluno').value = d.aluno;
         document.getElementById('tipoPgto').value = d.tipoPgto;
-        document.getElementById('taxa').value = d.taxa || "";
-        document.getElementById('boleto').value = d.boleto || "";
-        document.getElementById('parcelas').value = d.parcelas || "1";
-        document.getElementById('cartao').value = d.cartao || "";
-        document.getElementById('curso').value = d.curso || "";
-        document.getElementById('cidade').value = d.cidade || "";
-        document.getElementById('estado').value = d.estado || "";
-        document.getElementById('origem').value = d.origem || "";
-        
+        document.getElementById('taxa').value = d.taxa;
+        document.getElementById('boleto').value = d.boleto;
+        document.getElementById('parcelas').value = d.parcelas;
+        document.getElementById('cartao').value = d.cartao;
+        document.getElementById('curso').value = d.curso;
+        document.getElementById('cidade').value = d.cidade;
+        document.getElementById('estado').value = d.estado;
+        document.getElementById('origem').value = d.origem;
         const btn = document.getElementById('btnSalvar');
         btn.innerText = "ATUALIZAR DADOS";
-        btn.style.background = "#ffc107";
+        btn.style.background = "var(--yellow)";
         window.scrollTo(0,0);
     };
 
     window.excluirVenda = async (id) => {
-        if(confirm("Excluir venda permanentemente?")) await db.collection("vendas").doc(id).delete();
+        if(confirm("Deseja apagar esta venda permanentemente?")) await db.collection("vendas").doc(id).delete();
     };
 
-    db.collection("vendas").onSnapshot((snap) => {
+    // Atualização em tempo real
+    db.collection("vendas").orderBy("dataRef", "desc").onSnapshot((snap) => {
         const corpo = document.querySelector("#tabelaVendas tbody");
         corpo.innerHTML = "";
         vendasAtuais = [];
-        
         snap.forEach(doc => {
             const v = doc.data();
             vendasAtuais.push(v);
@@ -184,17 +264,18 @@
             const json = encodeURIComponent(JSON.stringify(v));
             corpo.innerHTML += `<tr>
                 <td>${v.dia}/${v.mes}/${v.ano}</td>
-                <td>${v.vendedor}</td>
+                <td style="font-weight:bold">${v.vendedor.toUpperCase()}</td>
                 <td>${v.aluno}</td>
-                <td>${v.tipoPgto}</td>
-                <td>${v.taxa}</td><td>${v.boleto}</td><td>${v.parcelas}</td><td>${v.cartao}</td>
+                <td><small>${v.tipoPgto}</small></td>
+                <td>${v.taxa}</td><td>${v.boleto}</td><td>${v.parcelas}</td><td style="color:var(--blue);font-weight:bold">${v.cartao}</td>
                 <td>${v.curso}</td><td>${v.cidade}/${v.estado}</td><td>${v.origem}</td>
                 <td>
-                    <button class="btn-acao" style="background:#ffc107" onclick="prepararEdicao('${id}','${json}')">ED</button>
-                    <button class="btn-acao" style="background:#dc3545;color:white" onclick="excluirVenda('${id}')">X</button>
+                    <button class="btn-acao" style="background:var(--yellow)" onclick="prepararEdicao('${id}','${json}')">ED</button>
+                    <button class="btn-acao" style="background:var(--red);color:white" onclick="excluirVenda('${id}')">X</button>
                 </td>
             </tr>`;
         });
+        atualizarDashboards();
     });
 </script>
 </body>
