@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <style>
-        :root { --navy: #001f3f; --green: #28a745; --yellow: #ffc107; --red: #dc3545; }
+        :root { --navy: #001f3f; --green: #28a745; --yellow: #ffc107; --red: #dc3545; --blue: #007bff; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
         .container { max-width: 1300px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h2 { color: var(--navy); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
@@ -15,12 +15,13 @@
         .field { display: flex; flex-direction: column; }
         label { font-size: 10px; font-weight: bold; color: #666; margin-bottom: 3px; text-transform: uppercase; }
         input, select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
-        #btnSalvar { grid-column: 1 / -1; background: var(--green); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .btn-group { display: flex; gap: 10px; grid-column: 1 / -1; }
+        #btnSalvar { flex: 2; background: var(--green); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        #btnExportar { flex: 1; background: var(--blue); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
         .table-wrapper { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; min-width: 1200px; font-size: 12px; }
         th { background: var(--navy); color: white; padding: 10px; border: 1px solid #003366; }
         td { padding: 8px; border: 1px solid #eee; text-align: center; }
-        .tag-pgto { padding: 3px 6px; border-radius: 10px; font-weight: bold; font-size: 10px; }
         .btn-acao { border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; }
     </style>
 </head>
@@ -44,7 +45,10 @@
             <div class="field"><label>Cidade</label><input type="text" id="cidade"></div>
             <div class="field"><label>UF</label><input type="text" id="estado"></div>
             <div class="field"><label>Origem</label><input type="text" id="origem"></div>
-            <button type="submit" id="btnSalvar">SALVAR NO SISTEMA</button>
+            <div class="btn-group">
+                <button type="submit" id="btnSalvar">SALVAR NO SISTEMA</button>
+                <button type="button" id="btnExportar" onclick="exportarExcel()">EXTRAIR PLANILHA (Excel)</button>
+            </div>
         </div>
     </form>
 
@@ -74,6 +78,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     let editId = null;
+    let vendasAtuais = []; // Para backup
 
     document.getElementById('vendaForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -113,6 +118,22 @@
         btn.disabled = false;
     });
 
+    // FUNÇÃO PARA EXPORTAR PLANILHA (CSV)
+    window.exportarExcel = () => {
+        if (vendasAtuais.length === 0) return alert("Nenhuma venda para exportar.");
+        
+        let csv = "Data;Vendedor;Aluno;Pgto;Taxa;Boleto;Parcelas;Cartao;Curso;Cidade;UF;Origem\n";
+        vendasAtuais.forEach(v => {
+            csv += `${v.dia}/${v.mes}/${v.ano};${v.vendedor};${v.aluno};${v.tipoPgto};${v.taxa};${v.boleto};${v.parcelas};${v.cartao};${v.curso};${v.cidade};${v.estado};${v.origem}\n`;
+        });
+
+        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "Relatorio_Vendas_2026.csv";
+        link.click();
+    };
+
     window.prepararEdicao = (id, json) => {
         editId = id;
         const d = JSON.parse(decodeURIComponent(json));
@@ -137,14 +158,18 @@
     };
 
     window.excluirVenda = async (id) => {
-        if(confirm("Excluir venda?")) await db.collection("vendas").doc(id).delete();
+        if(confirm("Excluir venda permanentemente?")) await db.collection("vendas").doc(id).delete();
     };
 
-    db.collection("vendas").orderBy("dataRef", "desc").onSnapshot((snap) => {
+    // ESCUTA O BANCO - Busca por dataRegistro ou dataRef (para não sumir nada)
+    db.collection("vendas").onSnapshot((snap) => {
         const corpo = document.querySelector("#tabelaVendas tbody");
         corpo.innerHTML = "";
+        vendasAtuais = [];
+        
         snap.forEach(doc => {
             const v = doc.data();
+            vendasAtuais.push(v);
             const id = doc.id;
             const json = encodeURIComponent(JSON.stringify(v));
             corpo.innerHTML += `<tr>
