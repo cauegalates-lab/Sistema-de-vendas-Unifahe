@@ -3,85 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Gestão Acadêmica - 2026</title>
+    <title>Sistema Acadêmico Pro - 2026</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <style>
         :root { 
-            --primary: #002b5c; /* Azul Marinho Acadêmico */
-            --secondary: #546e7a;
-            --accent: #d4af37; /* Dourado suave para detalhes */
-            --success: #1b5e20;
-            --danger: #b71c1c;
-            --bg: #f4f7f9;
+            --primary: #002b5c; 
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
             --white: #ffffff;
+            --border: #e2e8f0;
         }
 
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1400px; margin: auto; background: var(--white); padding: 30px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--primary); }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding: 0; }
         
-        header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
-        header h1 { color: var(--primary); margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
-        header p { color: var(--secondary); margin: 5px 0 0; font-style: italic; }
+        /* Header */
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; }
 
-        /* Navegação */
-        .tabs { display: flex; gap: 2px; margin-bottom: 25px; background: #e0e6ed; padding: 5px; border-radius: 4px; }
-        .tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-weight: 600; color: var(--primary); border-radius: 4px; transition: 0.3s; flex: 1; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        .tab-btn:hover:not(.active) { background: #d1d9e2; }
+        .wrapper { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
 
-        .tab-content { display: none; animation: fadeIn 0.4s; }
+        /* Menu de Abas */
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
+        .tab-btn { padding: 12px 24px; border: none; background: #e2e8f0; cursor: pointer; font-weight: 600; color: var(--primary); border-radius: 8px; transition: all 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        .tab-content { display: none; animation: slideUp 0.4s ease; }
         .tab-content.active { display: block; }
 
-        /* Tabelas */
-        .table-card { background: var(--white); border: 1px solid #e0e6ed; border-radius: 4px; overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f8f9fb; color: var(--primary); padding: 15px; text-align: center; border-bottom: 2px solid #e0e6ed; text-transform: uppercase; font-size: 11px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        tr:nth-child(even) { background-color: #fafbfc; }
-        .total-row { background: var(--primary) !important; color: white; font-weight: bold; }
-
-        /* Formulário Acadêmico */
-        .form-section { background: #fdfdfd; padding: 20px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; }
-        .field { display: flex; flex-direction: column; }
-        label { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; }
-        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px; transition: 0.2s; }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(0,43,92,0.1); }
+        /* Cards e Formulário */
+        .card { background: var(--white); padding: 25px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
         
-        .btn-main { background: var(--primary); color: white; border: none; padding: 15px 30px; font-weight: bold; border-radius: 3px; cursor: pointer; width: 100%; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-main:hover { opacity: 0.9; }
-        .btn-export { background: var(--success); color: white; border: none; padding: 25px; font-size: 18px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; max-width: 400px; }
+        .field { display: flex; flex-direction: column; }
+        label { font-size: 12px; font-weight: 700; color: var(--secondary); margin-bottom: 6px; text-transform: uppercase; }
+        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: #fcfcfc; }
+        input:focus { border-color: var(--primary); outline: none; background: white; }
 
-        .btn-acao { border: none; padding: 6px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; margin: 0 2px; }
+        .btn-submit { background: var(--success); color: white; border: none; padding: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 20px; font-size: 16px; transition: 0.2s; }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Tabela Estilizada */
+        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 1000px; }
+        th { background: #f1f5f9; color: var(--primary); padding: 15px; font-size: 11px; text-transform: uppercase; text-align: left; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        tr:hover { background: #f8fafc; }
+
+        .btn-edit { background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .btn-del { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; }
+
+        /* Aba Backup */
+        .backup-zone { text-align: center; padding: 40px; }
+        .btn-export { background: var(--primary); color: white; border: none; padding: 20px 40px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>Portal de Gestão Acadêmica e Comercial</h1>
-        <p>Sistema Unificado de Registros - Ano Letivo 2026</p>
-    </header>
+<header>
+    <h1>Gestão Acadêmica de Vendas 2026</h1>
+</header>
 
+<div class="wrapper">
     <div class="tabs">
-        <button class="tab-btn active" onclick="openTab('tab-vendas')">REGISTRO DE MATRÍCULAS</button>
-        <button class="tab-btn" onclick="openTab('tab-resumo')">RESUMO DE COMISSÕES</button>
-        <button class="tab-btn" onclick="openTab('tab-backup')">ARQUIVO E BACKUP</button>
+        <button class="tab-btn active" onclick="openTab('tab-vendas')">Lançamentos</button>
+        <button class="tab-btn" onclick="openTab('tab-resumo')">Comissões</button>
+        <button class="tab-btn" onclick="openTab('tab-backup')">Arquivos</button>
     </div>
 
     <div id="tab-vendas" class="tab-content active">
-        <div class="form-section">
+        <div class="card">
             <form id="vendaForm">
                 <div class="form-grid">
-                    <div class="field"><label>Dia</label><input type="number" id="dia" required></div>
-                    <div class="field"><label>Mês</label><input type="number" id="mes" required></div>
-                    <div class="field"><label>Ano</label><input type="number" id="ano" value="2026"></div>
-                    <div class="field"><label>Vendedor(a)</label><input type="text" id="vendedor" required></div>
-                    <div class="field"><label>Nome do Aluno</label><input type="text" id="aluno" required></div>
-                    <div class="field"><label>Forma Pgto</label><select id="tipoPgto"><option value="BOLETO">BOLETO</option><option value="CARTÃO">CARTÃO</option></select></div>
+                    <div class="field">
+                        <label>Data da Venda</label>
+                        <input type="date" id="dataVenda" required>
+                    </div>
+                    <div class="field">
+                        <label>Vendedor(a)</label>
+                        <input type="text" id="vendedor" placeholder="Nome do vendedor" required>
+                    </div>
+                    <div class="field">
+                        <label>Nome do Aluno</label>
+                        <input type="text" id="aluno" placeholder="Nome completo" required>
+                    </div>
+                    <div class="field">
+                        <label>Forma de Pagamento</label>
+                        <select id="tipoPgto">
+                            <option value="BOLETO">BOLETO (Comissão Unitária)</option>
+                            <option value="CARTÃO">CARTÃO (Valor Líquido)</option>
+                        </select>
+                    </div>
                     <div class="field"><label>Taxa R$</label><input type="text" id="taxa" value="0.00"></div>
                     <div class="field"><label>Boleto R$</label><input type="text" id="boleto" value="0.00"></div>
                     <div class="field"><label>Parcelas</label><input type="number" id="parcelas" value="1"></div>
@@ -89,17 +105,16 @@
                     <div class="field"><label>Curso</label><input type="text" id="curso"></div>
                     <div class="field"><label>Cidade</label><input type="text" id="cidade"></div>
                     <div class="field"><label>UF</label><input type="text" id="estado" maxlength="2"></div>
-                    <div class="field"><label>Origem</label><input type="text" id="origem"></div>
                 </div>
-                <button type="submit" id="btnSalvar" class="btn-main">EFETUAR REGISTRO NO SISTEMA</button>
+                <button type="submit" id="btnSalvar" class="btn-submit">CONFIRMAR REGISTRO</button>
             </form>
         </div>
 
-        <div class="table-card">
+        <div class="table-container">
             <table id="tabelaVendas">
                 <thead>
                     <tr>
-                        <th>DATA</th><th>VENDEDOR</th><th>ALUNO</th><th>PGTO</th><th>TAXA</th><th>BOLETO</th><th>PARC.</th><th>CARTÃO</th><th>CURSO</th><th>AÇÕES</th>
+                        <th>DATA</th><th>VENDEDOR</th><th>ALUNO</th><th>TIPO</th><th>TAXA</th><th>BOLETO</th><th>PARC.</th><th>CARTÃO</th><th>CURSO</th><th>AÇÕES</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -108,28 +123,31 @@
     </div>
 
     <div id="tab-resumo" class="tab-content">
-        <h3 style="color:var(--primary); text-align:center">RELATÓRIO FINANCEIRO DE COMISSIONAMENTO</h3>
-        <div class="table-card">
-            <table class="resumo-table">
-                <thead>
-                    <tr>
-                        <th>Vendedor(a)</th>
-                        <th>Total Cartão (Valor Bruto)</th>
-                        <th>Total Boletos (Quantidade)</th>
-                        <th>Comissão Boletos (R$ 20,00/un)</th>
-                    </tr>
-                </thead>
-                <tbody id="corpoResumo"></tbody>
-            </table>
+        <div class="card">
+            <h3 style="margin-top:0; color:var(--primary)">Relatório de Fechamento</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vendedor(a)</th>
+                            <th>Total Cartão (Líquido)</th>
+                            <th>Qtd. Boletos</th>
+                            <th>Comissão Boletos (R$ 20/un)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoResumo"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div id="tab-backup" class="tab-content" style="text-align: center; padding: 60px 0;">
-        <h3 style="color:var(--primary)">EXPORTAÇÃO DE DADOS INSTITUCIONAIS</h3>
-        <p style="color:var(--secondary); margin-bottom: 30px;">Gere um arquivo consolidado em formato .CSV para auditoria e backup.</p>
-        <button onclick="exportarExcel()" class="btn-export">EXTRAIR PLANILHA OFICIAL</button>
+    <div id="tab-backup" class="tab-content">
+        <div class="card backup-zone">
+            <h3>Exportar Base de Dados</h3>
+            <p>Clique abaixo para baixar todas as matrículas em formato Excel (.csv)</p>
+            <button onclick="exportarExcel()" class="btn-export">BAIXAR PLANILHA AGORA</button>
+        </div>
     </div>
-
 </div>
 
 <script>
@@ -146,6 +164,9 @@
     const db = firebase.firestore();
     let editId = null;
     let vendasAtuais = [];
+
+    // Define data de hoje no input automaticamente
+    document.getElementById('dataVenda').valueAsDate = new Date();
 
     function openTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -173,7 +194,7 @@
             const comissao = totais[nome].boletos * 20;
             corpo.innerHTML += `
                 <tr>
-                    <td style="font-weight:bold; color:var(--primary)">${nome}</td>
+                    <td style="font-weight:600">${nome}</td>
                     <td>R$ ${totais[nome].cartao.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
                     <td>${totais[nome].boletos} un.</td>
                     <td style="font-weight:bold; color:var(--success)">R$ ${comissao.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
@@ -182,55 +203,63 @@
     }
 
     window.exportarExcel = () => {
-        let csv = "\ufeffDia;Mes;Ano;Vendedor;Aluno;Pgto;Taxa;Boleto;Parcelas;Cartao;Curso;Cidade;UF;Origem\n";
+        let csv = "\ufeffData;Vendedor;Aluno;Pgto;Taxa;Boleto;Parcelas;Cartao;Curso;Cidade;UF\n";
         vendasAtuais.forEach(v => {
-            const f = (t) => t ? t.toString().replace(/;/g, '-') : "";
-            csv += `${f(v.dia)};${f(v.mes)};${f(v.ano)};${f(v.vendedor)};${f(v.aluno)};${f(v.tipoPgto)};${f(v.taxa)};${f(v.boleto)};${f(v.parcelas)};${f(v.cartao)};${f(v.curso)};${f(v.cidade)};${f(v.estado)};${f(v.origem)}\n`;
+            const dataFmt = v.dataVenda.split('-').reverse().join('/');
+            csv += `${dataFmt};${v.vendedor};${v.aluno};${v.tipoPgto};${v.taxa};${v.boleto};${v.parcelas};${v.cartao};${v.curso};${v.cidade};${v.estado}\n`;
         });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        link.download = `Relatorio_Academico_2026.csv`;
+        link.download = `Vendas_Consolidado.csv`;
         link.click();
     };
 
     document.getElementById('vendaForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const dados = {
-            dia: document.getElementById('dia').value, mes: document.getElementById('mes').value,
-            ano: document.getElementById('ano').value, vendedor: document.getElementById('vendedor').value,
-            aluno: document.getElementById('aluno').value, tipoPgto: document.getElementById('tipoPgto').value,
-            taxa: document.getElementById('taxa').value, boleto: document.getElementById('boleto').value,
-            parcelas: document.getElementById('parcelas').value, cartao: document.getElementById('cartao').value,
-            curso: document.getElementById('curso').value, cidade: document.getElementById('cidade').value,
-            estado: document.getElementById('estado').value, origem: document.getElementById('origem').value,
+            dataVenda: document.getElementById('dataVenda').value,
+            vendedor: document.getElementById('vendedor').value,
+            aluno: document.getElementById('aluno').value,
+            tipoPgto: document.getElementById('tipoPgto').value,
+            taxa: document.getElementById('taxa').value,
+            boleto: document.getElementById('boleto').value,
+            parcelas: document.getElementById('parcelas').value,
+            cartao: document.getElementById('cartao').value,
+            curso: document.getElementById('curso').value,
+            cidade: document.getElementById('cidade').value,
+            estado: document.getElementById('estado').value,
             dataRef: firebase.firestore.FieldValue.serverTimestamp()
         };
         if (editId) {
             await db.collection("vendas").doc(editId).update(dados);
             editId = null;
-            document.getElementById('btnSalvar').innerText = "EFETUAR REGISTRO NO SISTEMA";
+            document.getElementById('btnSalvar').innerText = "CONFIRMAR REGISTRO";
         } else {
             await db.collection("vendas").add(dados);
         }
         e.target.reset();
-        document.getElementById('ano').value = "2026";
+        document.getElementById('dataVenda').valueAsDate = new Date();
     });
 
     window.prepararEdicao = (id, json) => {
         editId = id;
         const d = JSON.parse(decodeURIComponent(json));
-        document.getElementById('dia').value = d.dia; document.getElementById('mes').value = d.mes;
-        document.getElementById('vendedor').value = d.vendedor; document.getElementById('aluno').value = d.aluno;
-        document.getElementById('tipoPgto').value = d.tipoPgto; document.getElementById('taxa').value = d.taxa;
-        document.getElementById('boleto').value = d.boleto; document.getElementById('parcelas').value = d.parcelas;
-        document.getElementById('cartao').value = d.cartao; document.getElementById('curso').value = d.curso;
-        document.getElementById('cidade').value = d.cidade; document.getElementById('estado').value = d.estado;
-        document.getElementById('origem').value = d.origem;
-        document.getElementById('btnSalvar').innerText = "ATUALIZAR REGISTRO";
+        document.getElementById('dataVenda').value = d.dataVenda;
+        document.getElementById('vendedor').value = d.vendedor;
+        document.getElementById('aluno').value = d.aluno;
+        document.getElementById('tipoPgto').value = d.tipoPgto;
+        document.getElementById('taxa').value = d.taxa;
+        document.getElementById('boleto').value = d.boleto;
+        document.getElementById('parcelas').value = d.parcelas;
+        document.getElementById('cartao').value = d.cartao;
+        document.getElementById('curso').value = d.curso;
+        document.getElementById('cidade').value = d.cidade;
+        document.getElementById('estado').value = d.estado;
+        document.getElementById('btnSalvar').innerText = "ATUALIZAR DADOS";
         openTab('tab-vendas');
     };
 
-    window.excluirVenda = async (id) => { if(confirm("Deseja remover este registro do sistema acadêmico?")) await db.collection("vendas").doc(id).delete(); };
+    window.excluirVenda = async (id) => { if(confirm("Deseja apagar?")) await db.collection("vendas").doc(id).delete(); };
 
     db.collection("vendas").orderBy("dataRef", "desc").onSnapshot((snap) => {
         const corpo = document.querySelector("#tabelaVendas tbody");
@@ -239,12 +268,13 @@
         snap.forEach(doc => {
             const v = doc.data(); vendasAtuais.push(v);
             const id = doc.id; const json = encodeURIComponent(JSON.stringify(v));
+            const dataFmt = v.dataVenda ? v.dataVenda.split('-').reverse().join('/') : '---';
             corpo.innerHTML += `<tr>
-                <td>${v.dia}/${v.mes}</td><td>${v.vendedor.toUpperCase()}</td><td>${v.aluno}</td><td>${v.tipoPgto}</td>
-                <td>${v.taxa}</td><td>${v.boleto}</td><td>${v.parcelas}</td><td>${v.cartao}</td><td>${v.curso}</td>
+                <td>${dataFmt}</td><td>${v.vendedor.toUpperCase()}</td><td>${v.aluno}</td><td>${v.tipoPgto}</td>
+                <td>${v.taxa}</td><td>${v.boleto}</td><td>${v.parcelas}</td><td>R$ ${v.cartao}</td><td>${v.curso}</td>
                 <td>
-                    <button class="btn-acao" style="background:var(--yellow)" onclick="prepararEdicao('${id}','${json}')">EDITAR</button>
-                    <button class="btn-acao" style="background:var(--danger);color:white" onclick="excluirVenda('${id}')">X</button>
+                    <button class="btn-edit" onclick="prepararEdicao('${id}','${json}')">EDITAR</button>
+                    <button class="btn-del" onclick="excluirVenda('${id}')">X</button>
                 </td>
             </tr>`;
         });
