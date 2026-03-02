@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Vendas - Oficial</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --navy: #001f3f; --green: #28a745; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: var(--navy); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+        .field { display: flex; flex-direction: column; }
+        label { font-size: 11px; font-weight: bold; color: #555; margin-bottom: 4px; text-transform: uppercase; }
+        input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        button { grid-column: 1 / -1; background: var(--green); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .table-wrapper { overflow-x: auto; background: white; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1300px; font-size: 12px; }
+        th { background: var(--navy); color: white; padding: 10px; text-transform: uppercase; border: 1px solid #003366; }
+        td { padding: 8px; border: 1px solid #ddd; text-align: center; }
+        .tag { padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+        .tag-boleto { background: #fff3cd; color: #856404; }
+        .tag-cartao { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Novo Cadastro de Venda</h2>
+    <form id="vendaForm" class="form-grid">
+        <div class="field"><label>Dia</label><input type="number" id="dia" required></div>
+        <div class="field"><label>Mês</label><input type="number" id="mes" required></div>
+        <div class="field"><label>Ano</label><input type="number" id="ano" value="2026"></div>
+        <div class="field"><label>Vendedor</label><input type="text" id="vendedor" required></div>
+        <div class="field"><label>Aluno</label><input type="text" id="aluno" required></div>
+        <div class="field"><label>Tipo Pgto</label>
+            <select id="tipoPgto">
+                <option value="BOLETO">BOLETO</option>
+                <option value="CARTÃO">CARTÃO</option>
+            </select>
+        </div>
+        <div class="field"><label>Taxa</label><input type="text" id="taxa"></div>
+        <div class="field"><label>Boleto (R$)</label><input type="text" id="boleto"></div>
+        <div class="field"><label>Parcelas</label><input type="number" id="parcelas"></div>
+        <div class="field"><label>Cartão (R$)</label><input type="text" id="cartao"></div>
+        <div class="field"><label>Curso</label><input type="text" id="curso"></div>
+        <div class="field"><label>Cidade</label><input type="text" id="cidade"></div>
+        <div class="field"><label>Estado</label><input type="text" id="estado"></div>
+        <div class="field"><label>Origem</label><input type="text" id="origem"></div>
+        <div class="field"><label>Qtd Cursos</label><input type="number" id="qtdCursos" value="1"></div>
+        <button type="submit">SALVAR VENDA NO PAINEL PRINCIPAL</button>
+    </form>
+</div>
+
+<div class="table-wrapper">
+    <table id="tabelaVendas">
+        <thead>
+            <tr>
+                <th>DATA</th><th>VENDEDOR</th><th>ALUNO</th><th>PGTO</th>
+                <th>TAXA</th><th>BOLETO</th><th>PARC.</th><th>CARTÃO</th>
+                <th>CURSO</th><th>LOCAL</th><th>ORIGEM</th><th>QTD</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    // Suas chaves do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDDFh0bzpV0aMvMcp6Dp7626EeJdXbstlw",
+      authDomain: "sistema-de-vendas-8cdb9.firebaseapp.com",
+      projectId: "sistema-de-vendas-8cdb9",
+      storageBucket: "sistema-de-vendas-8cdb9.firebasestorage.app",
+      messagingSenderId: "570383573044",
+      appId: "1:570383573044:web:672531ad3af5341e1c2a61"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Enviar para o Banco
+    document.getElementById('vendaForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button');
+        btn.disabled = true; btn.innerText = "Enviando...";
+
+        try {
+            await db.collection("vendas").add({
+                dia: document.getElementById('dia').value,
+                mes: document.getElementById('mes').value,
+                ano: document.getElementById('ano').value,
+                vendedor: document.getElementById('vendedor').value,
+                aluno: document.getElementById('aluno').value,
+                tipoPgto: document.getElementById('tipoPgto').value,
+                taxa: document.getElementById('taxa').value,
+                boleto: document.getElementById('boleto').value,
+                parcelas: document.getElementById('parcelas').value,
+                cartao: document.getElementById('cartao').value,
+                curso: document.getElementById('curso').value,
+                cidade: document.getElementById('cidade').value,
+                estado: document.getElementById('estado').value,
+                origem: document.getElementById('origem').value,
+                qtdCursos: document.getElementById('qtdCursos').value,
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            e.target.reset();
+            alert("Venda registrada!");
+        } catch (err) { alert("Erro: " + err.message); }
+        btn.disabled = false; btn.innerText = "SALVAR VENDA NO PAINEL PRINCIPAL";
+    });
+
+    // Atualizar Tabela em tempo real para todos
+    db.collection("vendas").orderBy("criadoEm", "desc").onSnapshot((snap) => {
+        const corpo = document.querySelector("#tabelaVendas tbody");
+        corpo.innerHTML = "";
+        snap.forEach(doc => {
+            const v = doc.data();
+            const tagClass = v.tipoPgto === 'BOLETO' ? 'tag-boleto' : 'tag-cartao';
+            corpo.innerHTML += `<tr>
+                <td>${v.dia}/${v.mes}/${v.ano}</td>
+                <td>${v.vendedor}</td>
+                <td>${v.aluno}</td>
+                <td><span class="tag ${tagClass}">${v.tipoPgto}</span></td>
+                <td>${v.taxa}</td><td>${v.boleto}</td><td>${v.parcelas}</td><td>${v.cartao}</td>
+                <td>${v.curso}</td><td>${v.cidade}/${v.estado}</td><td>${v.origem}</td><td>${v.qtdCursos}</td>
+            </tr>`;
+        });
+    });
+</script>
+</body>
+</html>
