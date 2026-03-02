@@ -66,6 +66,7 @@
 </div>
 
 <script>
+    // Suas chaves do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDDFh0bzpV0aMvMcp6Dp7626EeJdXbstlw",
       authDomain: "sistema-de-vendas-8cdb9.firebaseapp.com",
@@ -78,7 +79,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     let editId = null;
-    let vendasAtuais = []; // Para backup
+    let vendasAtuais = [];
 
     document.getElementById('vendaForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -92,14 +93,14 @@
             vendedor: document.getElementById('vendedor').value,
             aluno: document.getElementById('aluno').value,
             tipoPgto: document.getElementById('tipoPgto').value,
-            taxa: document.getElementById('taxa').value,
-            boleto: document.getElementById('boleto').value,
-            parcelas: document.getElementById('parcelas').value,
-            cartao: document.getElementById('cartao').value,
-            curso: document.getElementById('curso').value,
-            cidade: document.getElementById('cidade').value,
-            estado: document.getElementById('estado').value,
-            origem: document.getElementById('origem').value,
+            taxa: document.getElementById('taxa').value || "",
+            boleto: document.getElementById('boleto').value || "",
+            parcelas: document.getElementById('parcelas').value || "1",
+            cartao: document.getElementById('cartao').value || "",
+            curso: document.getElementById('curso').value || "",
+            cidade: document.getElementById('cidade').value || "",
+            estado: document.getElementById('estado').value || "",
+            origem: document.getElementById('origem').value || "",
             dataRef: firebase.firestore.FieldValue.serverTimestamp()
         };
 
@@ -118,19 +119,29 @@
         btn.disabled = false;
     });
 
-    // FUNÇÃO PARA EXPORTAR PLANILHA (CSV)
+    // CORREÇÃO DA EXPORTAÇÃO PARA EXCEL
     window.exportarExcel = () => {
         if (vendasAtuais.length === 0) return alert("Nenhuma venda para exportar.");
         
-        let csv = "Data;Vendedor;Aluno;Pgto;Taxa;Boleto;Parcelas;Cartao;Curso;Cidade;UF;Origem\n";
+        // Cabeçalho da planilha
+        let csv = "Data,Vendedor,Aluno,Pgto,Taxa,Boleto,Parcelas,Cartao,Curso,Cidade,UF,Origem\n";
+        
         vendasAtuais.forEach(v => {
-            csv += `${v.dia}/${v.mes}/${v.ano};${v.vendedor};${v.aluno};${v.tipoPgto};${v.taxa};${v.boleto};${v.parcelas};${v.cartao};${v.curso};${v.cidade};${v.estado};${v.origem}\n`;
+            // Garante que campos vazios não quebrem a linha e remove vírgulas internas que possam existir nos nomes
+            const limpar = (txt) => txt ? txt.toString().replace(/,/g, '.') : "";
+            
+            csv += `${limpar(v.dia)}/${limpar(v.mes)}/${limpar(v.ano)},` +
+                   `${limpar(v.vendedor)},${limpar(v.aluno)},${limpar(v.tipoPgto)},` +
+                   `${limpar(v.taxa)},${limpar(v.boleto)},${limpar(v.parcelas)},` +
+                   `${limpar(v.cartao)},${limpar(v.curso)},${limpar(v.cidade)},` +
+                   `${limpar(v.estado)},${limpar(v.origem)}\n`;
         });
 
+        // Adiciona o marcador UTF-8 para o Excel reconhecer acentos corretamente
         const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = "Relatorio_Vendas_2026.csv";
+        link.download = `Vendas_Oficial_${new Date().toLocaleDateString()}.csv`;
         link.click();
     };
 
@@ -161,7 +172,6 @@
         if(confirm("Excluir venda permanentemente?")) await db.collection("vendas").doc(id).delete();
     };
 
-    // ESCUTA O BANCO - Busca por dataRegistro ou dataRef (para não sumir nada)
     db.collection("vendas").onSnapshot((snap) => {
         const corpo = document.querySelector("#tabelaVendas tbody");
         corpo.innerHTML = "";
