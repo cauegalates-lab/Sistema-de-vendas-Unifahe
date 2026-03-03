@@ -3,144 +3,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Acadêmico de Gestão - 2026</title>
+    <title>SISTEMA COMERCIAL UNIFAHE - 2026</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    
     <style>
-        :root { 
-            --primary: #002b5c; 
-            --secondary: #64748b;
-            --success: #10b981;
-            --danger: #ef4444;
-            --bg: #f8fafc;
+        :root {
+            --unifahe-blue: #002b5c;
+            --unifahe-dark: #001a35;
+            --unifahe-orange: #f37021;
+            --bg-light: #f8fafd;
+            --radius: 12px;
             --white: #ffffff;
-            --border: #e2e8f0;
         }
 
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding: 0; }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        header h1 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-transform: none; }
+        body { margin: 0; background-color: var(--bg-light); color: var(--unifahe-dark); overflow-x: hidden; }
 
-        .wrapper { max-width: 1500px; margin: 20px auto; padding: 0 20px; }
+        /* LOGIN */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--unifahe-dark); display: flex; align-items: center; justify-content: center; z-index: 10000;
+        }
+        .login-card {
+            background: var(--unifahe-blue); padding: 40px; border-radius: var(--radius);
+            text-align: center; width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .login-card img { width: 220px; margin-bottom: 30px; filter: brightness(0) invert(1); }
 
-        /* Navegação */
-        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
-        .tab-btn { padding: 12px 24px; border: none; background: #e2e8f0; cursor: pointer; font-weight: 600; color: var(--primary); border-radius: 8px; transition: 0.3s; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
+        /* SIDEBAR */
+        #sidebar { 
+            width: 260px; background: var(--unifahe-dark); position: fixed; height: 100%; 
+            left: -260px; transition: 0.4s; z-index: 999;
+        }
+        #sidebar.active { left: 0; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+        .nav-item { 
+            padding: 18px 25px; cursor: pointer; color: white; font-weight: 500; 
+            transition: 0.3s; border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-transform: uppercase; font-size: 12px;
+        }
+        .nav-item:hover { background: var(--unifahe-blue); color: var(--unifahe-orange); }
 
-        /* Cards e Formulário */
-        .card { background: var(--white); padding: 25px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-        
-        .field { display: flex; flex-direction: column; }
-        label { font-size: 10px; font-weight: 700; color: var(--secondary); margin-bottom: 5px; text-transform: uppercase; }
-        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
-        input:focus { border-color: var(--primary); outline: none; }
+        /* HERO & DESIGN */
+        .hero {
+            background: var(--unifahe-blue); padding: 50px 20px; text-align: center;
+            border-bottom: 5px solid var(--unifahe-orange);
+        }
+        .hero img { width: 250px; filter: brightness(0) invert(1); }
+        .hero h1 { color: white; font-size: 1.8rem; margin: 15px 0; font-weight: 300; letter-spacing: 1px; }
+        .divider-orange { height: 4px; width: 60px; background: var(--unifahe-orange); margin: 20px auto; }
 
-        .btn-submit { background: var(--success); color: white; border: none; padding: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 15px; font-size: 15px; }
+        /* MENU GRID */
+        .menu-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px; max-width: 1100px; margin: 50px auto; padding: 0 20px;
+        }
+        .menu-btn {
+            background: white; padding: 40px 20px; border-radius: var(--radius); text-align: center;
+            cursor: pointer; transition: 0.3s; border: 1px solid #ddd;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .menu-btn:hover { border-color: var(--unifahe-orange); transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .menu-btn h3 { color: var(--unifahe-blue); font-size: 14px; margin: 0; font-weight: 700; text-transform: uppercase; }
 
-        /* Tabelas e Filtros por Coluna */
-        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); background: white; }
-        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
-        th { background: #f1f5f9; color: var(--primary); padding: 12px; font-size: 11px; text-transform: uppercase; text-align: center; border-bottom: 2px solid var(--border); }
-        td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 13px; text-align: center; }
-        
-        /* Estilo dos inputs de filtro na tabela */
-        .col-filter { width: 90%; padding: 5px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 4px; margin-top: 5px; }
-
-        .btn-edit { background: #f59e0b; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
-        .btn-del { background: var(--danger); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
-
+        /* CONTAINERS */
+        .container { padding: 40px; display: none; max-width: 1300px; margin: auto; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .form-box { 
+            background: white; padding: 30px; border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 30px;
+            border-top: 4px solid var(--unifahe-blue);
+        }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .field label { display: block; font-size: 11px; font-weight: 700; color: var(--unifahe-blue); margin-bottom: 5px; text-transform: uppercase; }
+        
+        input, select { 
+            width: 100%; padding: 12px; border: 1px solid #ccc; 
+            border-radius: 6px; background: #fff; color: #333; outline: none;
+        }
+
+        /* TABELAS */
+        .table-res { background: white; border-radius: var(--radius); overflow: hidden; border: 1px solid #eee; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--unifahe-blue); color: white; padding: 15px; font-size: 11px; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 13px; color: #444; }
+
+        .btn-principal {
+            background: var(--unifahe-orange); color: white; border: none; padding: 15px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s;
+            text-transform: uppercase; font-size: 13px;
+        }
+        .btn-principal:hover { background: #d65a12; }
+
+        /* CARDS TIMES */
+        .time-card {
+            background: white; border-radius: var(--radius); overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee;
+        }
+        .time-header { background: var(--unifahe-blue); padding: 15px; display: flex; align-items: center; gap: 15px; }
+        .time-logo { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; background: #fff; border: 2px solid var(--unifahe-orange); }
+        .time-header h3 { color: white; margin: 0; font-size: 16px; text-transform: uppercase; }
+        
+        /* DIARIO */
+        .diario-vendedor-box {
+            background: white; border-radius: var(--radius); padding: 20px;
+            border-left: 6px solid var(--unifahe-blue); margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .diario-header { font-weight: bold; font-size: 16px; color: var(--unifahe-blue); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .venda-item { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; color: #666; }
+
+        /* LEGENDA FÉRIAS */
+        .legenda-container { width: 180px; background: white; padding: 15px; border-radius: var(--radius); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .legenda-item { padding: 6px; text-align: center; border-radius: 4px; color: white; font-size: 11px; font-weight: bold; margin-bottom: 4px; }
+        .mes-tag { padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 10px; }
+
+        #modalGestor {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none; 
+            align-items: center; justify-content: center; z-index: 10001;
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>Portal de Gestão Acadêmica 2026</h1>
-</header>
+<div id="loginOverlay">
+    <div class="login-card">
+        <img src="https://unifahe.edu.br/wp-content/uploads/2025/08/logo-unifahe.png">
+        <button class="btn-principal" onclick="entrar()">ENTRAR NO SISTEMA</button>
+    </div>
+</div>
 
-<div class="wrapper">
-    <div class="tabs">
-        <button class="tab-btn active" onclick="openTab('tab-vendas')">Lançamentos</button>
-        <button class="tab-btn" onclick="openTab('tab-resumo')">Comissões</button>
-        <button class="tab-btn" onclick="openTab('tab-backup')">Extração de Dados</button>
+<div id="mainPortal" style="display:none">
+    <div id="sidebar">
+        <div style="text-align:center; padding: 30px;"><img src="https://unifahe.edu.br/wp-content/uploads/2025/08/logo-unifahe.png" style="width:160px; filter: brightness(0) invert(1);"></div>
+        <div class="nav-item" onclick="home()">INÍCIO</div>
+        <div class="nav-item" onclick="abrir('VENDAS')">VENDAS</div>
+        <div class="nav-item" onclick="abrir('TIMES')">TIMES</div>
+        <div class="nav-item" onclick="abrir('INDIQUE')">INDIQUE E GANHE</div>
+        <div class="nav-item" onclick="abrir('DIARIO')">DIÁRIO</div>
+        <div class="nav-item" onclick="abrir('FERIAS')">FÉRIAS</div>
+        <div class="nav-item" style="color:var(--unifahe-orange); margin-top:50px" onclick="location.reload()">SAIR</div>
     </div>
 
-    <div id="tab-vendas" class="tab-content active">
-        <div class="card">
-            <form id="vendaForm">
-                <div class="form-grid">
-                    <div class="field"><label>Data</label><input type="date" id="dataVenda" required></div>
-                    <div class="field"><label>Vendedor</label><input type="text" id="vendedor" required></div>
-                    <div class="field"><label>Aluno</label><input type="text" id="aluno" required></div>
-                    <div class="field">
-                        <label>Tipo</label>
-                        <select id="tipoPgto">
-                            <option value="BOLETO">BOLETO</option>
-                            <option value="CARTÃO">CARTÃO</option>
+    <div id="content">
+        <div id="homePage">
+            <div class="hero">
+                <img src="https://unifahe.edu.br/wp-content/uploads/2025/08/logo-unifahe.png">
+                <h1>COMERCIAL UNIFAHE</h1>
+                <div class="divider-orange"></div>
+            </div>
+            <div class="menu-grid">
+                <div class="menu-btn" onclick="abrir('TIMES')"><h3>TIMES</h3></div>
+                <div class="menu-btn" onclick="abrir('VENDAS')"><h3>VENDAS</h3></div>
+                <div class="menu-btn" onclick="abrir('INDIQUE')"><h3>INDIQUE E GANHE</h3></div>
+                <div class="menu-btn" onclick="abrir('DIARIO')"><h3>DIÁRIO</h3></div>
+                <div class="menu-btn" onclick="abrir('FERIAS')"><h3>FÉRIAS</h3></div>
+            </div>
+        </div>
+
+        <div id="secaoVendas" class="container">
+            <div class="form-box">
+                <form id="vendaForm" class="grid-inputs">
+                    <div class="field"><label>Data</label><input type="date" id="f_data" required></div>
+                    <div class="field"><label>Vendedor</label><input type="text" id="f_vendedor" required></div>
+                    <div class="field"><label>Nome do Aluno</label><input type="text" id="f_aluno" required></div>
+                    <div class="field"><label>Pagamento</label><select id="f_tipo"><option>BOLETO</option><option>CARTÃO</option><option>À VISTA</option></select></div>
+                    <div class="field"><label>Taxa (R$)</label><input type="text" id="f_taxa" value="0.00"></div>
+                    <div class="field"><label>Valor Cartão (R$)</label><input type="text" id="f_cartao" value="0.00"></div>
+                    <div style="grid-column: 1 / -1; margin-top:10px; display:flex; gap:10px;">
+                        <button type="submit" id="btnSalvarVenda" class="btn-principal">REGISTRAR MATRÍCULA</button>
+                        <button type="button" id="btnUpdateVenda" class="btn-principal" style="display:none; background:var(--unifahe-blue)">ATUALIZAR DADOS</button>
+                    </div>
+                </form>
+            </div>
+            <div class="table-res"><table id="tabVendas"><thead><tr><th>DATA</th><th>VENDEDOR</th><th>ALUNO</th><th>TOTAL</th><th>AÇÃO</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="secaoTimes" class="container">
+            <div id="gridTimes" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;"></div>
+            <div class="form-box" style="margin-top: 30px; text-align: center; border-top: 5px solid var(--unifahe-orange);">
+                <h2 style="color: var(--unifahe-blue); margin: 0; font-size: 14px;">TOTAL GERAL PRODUZIDO</h2>
+                <div id="totalGeralSistema" style="font-size: 40px; font-weight: bold; color: var(--unifahe-dark);">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div id="secaoIndique" class="container">
+            <div class="form-box" style="border-top-color: var(--unifahe-orange);">
+                <form id="indiqueForm" class="grid-inputs">
+                    <div class="field"><label>Vendedor</label><input type="text" id="ind_vendedor" required></div>
+                    <div class="field"><label>Quem Indicou?</label><input type="text" id="ind_nome" required></div>
+                    <div class="field"><label>Chave PIX</label><input type="text" id="ind_pix"></div>
+                    <div class="field"><label>Aluno Novo</label><input type="text" id="ind_aluno" required></div>
+                    <div class="field"><label>Situação</label><select id="ind_status"><option>AGUARDANDO</option><option>PAGO PIX</option></select></div>
+                    <div style="grid-column: 1 / -1; margin-top:10px; display:flex; gap:10px;">
+                        <button type="submit" id="btnSalvarIndique" class="btn-principal">SALVAR INDICAÇÃO</button>
+                        <button type="button" id="btnUpdateIndique" class="btn-principal" style="display:none; background:var(--unifahe-blue)">ATUALIZAR</button>
+                    </div>
+                </form>
+            </div>
+            <div class="table-res"><table id="tabIndique"><thead><tr><th>VENDEDOR</th><th>INDICADOR</th><th>INDICADO</th><th>STATUS</th><th>AÇÃO</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="secaoDiario" class="container">
+            <div class="form-box" style="text-align: center;"><h2 id="labelDataHoje" style="margin:0; color:var(--unifahe-blue)">03/03/2026</h2></div>
+            <div id="gridDiario" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;"></div>
+        </div>
+
+        <div id="secaoFerias" class="container">
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                <div class="table-res" style="flex: 1;"><table id="tabFerias"><thead><tr><th>COLABORADOR</th><th>ADMISSÃO</th><th>LIMITE</th><th>MÊS PRETENDIDO</th><th>DIAS</th><th>AÇÃO</th></tr></thead><tbody></tbody></table></div>
+                <div class="legenda-container">
+                    <h4 style="font-size:10px; text-align:center; margin-top:0">LEGENDA MESES</h4>
+                    <div class="legenda-item" style="background:#f39c12">JANEIRO</div>
+                    <div class="legenda-item" style="background:#f1c40f">FEVEREIRO</div>
+                    <div class="legenda-item" style="background:#2ecc71">MARÇO</div>
+                    <div class="legenda-item" style="background:#3498db">ABRIL</div>
+                    <div class="legenda-item" style="background:#9b59b6">MAIO</div>
+                    <div class="legenda-item" style="background:#e91e63">JUNHO</div>
+                    <div class="legenda-item" style="background:#ffc0cb; color:#333">JULHO</div>
+                    <div class="legenda-item" style="background:#27ae60">AGOSTO</div>
+                    <div class="legenda-item" style="background:#2c3e50">SETEMBRO</div>
+                    <div class="legenda-item" style="background:#8e44ad">OUTUBRO</div>
+                    <div class="legenda-item" style="background:#2980b9">NOVEMBRO</div>
+                </div>
+            </div>
+            <div class="form-box" style="margin-top:20px">
+                <form id="feriasForm" class="grid-inputs">
+                    <div class="field"><label>Nome</label><input type="text" id="fer_nome" required></div>
+                    <div class="field"><label>Admissão</label><input type="date" id="fer_adm" required></div>
+                    <div class="field"><label>Limite Gozo</label><input type="date" id="fer_limite"></div>
+                    <div class="field"><label>Pretensão</label>
+                        <select id="fer_mes">
+                            <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option><option>Maio</option><option>Junho</option>
+                            <option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
                         </select>
                     </div>
-                    <div class="field"><label>Taxa</label><input type="text" id="taxa" value="0.00"></div>
-                    <div class="field"><label>Boleto</label><input type="text" id="boleto" value="0.00"></div>
-                    <div class="field"><label>Parc.</label><input type="number" id="parcelas" value="1"></div>
-                    <div class="field"><label>Cartão</label><input type="text" id="cartao" value="0.00"></div>
-                    <div class="field"><label>Curso</label><input type="text" id="curso"></div>
-                    <div class="field"><label>Cidade</label><input type="text" id="cidade"></div>
-                    <div class="field"><label>UF</label><input type="text" id="estado" maxlength="2"></div>
-                </div>
-                <button type="submit" id="btnSalvar" class="btn-submit">CONFIRMAR REGISTRO ACADÊMICO</button>
-            </form>
-        </div>
-
-        <div class="table-container">
-            <table id="tabelaVendas">
-                <thead>
-                    <tr>
-                        <th>DATA<br><input type="text" class="col-filter" onkeyup="renderizarTabelaVendas()" placeholder="Filtrar..."></th>
-                        <th>VENDEDOR<br><input type="text" class="col-filter" onkeyup="renderizarTabelaVendas()" placeholder="Filtrar..."></th>
-                        <th>ALUNO<br><input type="text" class="col-filter" onkeyup="renderizarTabelaVendas()" placeholder="Filtrar..."></th>
-                        <th>TIPO<br><input type="text" class="col-filter" onkeyup="renderizarTabelaVendas()" placeholder="Filtrar..."></th>
-                        <th>TAXA</th><th>BOLETO</th><th>PARC.</th><th>CARTÃO</th>
-                        <th>CURSO<br><input type="text" class="col-filter" onkeyup="renderizarTabelaVendas()" placeholder="Filtrar..."></th>
-                        <th>AÇÕES</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="tab-resumo" class="tab-content">
-        <div class="card">
-            <div class="table-container">
-                <table id="tabelaResumo">
-                    <thead>
-                        <tr>
-                            <th>Vendedor<br><input type="text" class="col-filter" onkeyup="atualizarResumo()" placeholder="Filtrar..."></th>
-                            <th>Total Cartão</th>
-                            <th>Qtd. Boletos</th>
-                            <th>Comissão Boletos (R$ 20/un)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="corpoResumo"></tbody>
-                </table>
+                    <div class="field"><label>Dias</label><input type="number" id="fer_dias" value="30"></div>
+                    <div class="field"><label>Ação</label><button type="submit" class="btn-principal">SALVAR FÉRIAS</button></div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="tab-backup" class="tab-content">
-        <div class="card" style="text-align:center">
-            <h3>Download de Planilha de Segurança</h3>
-            <button onclick="exportarExcel()" class="btn-submit" style="width:auto; padding: 15px 50px; background:var(--primary)">BAIXAR CSV PARA EXCEL</button>
+<div id="modalGestor">
+    <div class="login-card" style="background:white; border-top: 5px solid var(--unifahe-orange);">
+        <h3 style="color:var(--unifahe-blue)">SENHA DO GESTOR</h3>
+        <input type="password" id="senhaGestor" placeholder="CÓDIGO DE AUTORIZAÇÃO" style="margin-bottom:15px; border:1px solid #ddd; color: #333">
+        <div style="display:flex; gap:10px">
+            <button class="btn-principal" id="confirmaDel">CONFIRMAR</button>
+            <button class="btn-principal" style="background:#888" onclick="fecharModal()">VOLTAR</button>
         </div>
     </div>
 </div>
 
 <script>
+    // FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyDDFh0bzpV0aMvMcp6Dp7626EeJdXbstlw",
       authDomain: "sistema-de-vendas-8cdb9.firebaseapp.com",
@@ -149,156 +269,175 @@
       messagingSenderId: "570383573044",
       appId: "1:570383573044:web:672531ad3af5341e1c2a61"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    let editId = null;
-    let vendasAtuais = [];
 
-    // Preencher data de hoje automaticamente
-    document.getElementById('dataVenda').valueAsDate = new Date();
-
-    function openTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
-
-    const paraNum = (v) => parseFloat(v?.toString().replace(',', '.')) || 0;
-
-    function renderizarTabelaVendas() {
-        const filtros = document.querySelectorAll('#tabelaVendas .col-filter');
-        const fData = filtros[0].value.toLowerCase();
-        const fVend = filtros[1].value.toLowerCase();
-        const fAlun = filtros[2].value.toLowerCase();
-        const fTipo = filtros[3].value.toLowerCase();
-        const fCurs = filtros[4].value.toLowerCase();
-
-        const corpo = document.querySelector("#tabelaVendas tbody");
-        corpo.innerHTML = "";
-
-        vendasAtuais.forEach(v => {
-            const dataFmt = v.dataVenda.split('-').reverse().join('/');
-            
-            const match = dataFmt.toLowerCase().includes(fData) &&
-                          v.vendedor.toLowerCase().includes(fVend) &&
-                          v.aluno.toLowerCase().includes(fAlun) &&
-                          v.tipoPgto.toLowerCase().includes(fTipo) &&
-                          (v.curso || "").toLowerCase().includes(fCurs);
-
-            if (match) {
-                const id = v.idDoc;
-                const json = encodeURIComponent(JSON.stringify(v));
-                corpo.innerHTML += `<tr>
-                    <td>${dataFmt}</td><td>${v.vendedor.toUpperCase()}</td><td>${v.aluno}</td><td>${v.tipoPgto}</td>
-                    <td>${v.taxa}</td><td>${v.boleto}</td><td>${v.parcelas}</td><td>R$ ${v.cartao}</td><td>${v.curso}</td>
-                    <td>
-                        <button class="btn-edit" onclick="prepararEdicao('${id}','${json}')">ED</button>
-                        <button class="btn-del" onclick="excluirVenda('${id}')">X</button>
-                    </td>
-                </tr>`;
-            }
-        });
-    }
-
-    function atualizarResumo() {
-        const fVend = document.querySelector('#tabelaResumo .col-filter').value.toLowerCase();
-        const totais = {};
-        
-        vendasAtuais.forEach(v => {
-            const vend = v.vendedor.toUpperCase().trim();
-            if (vend.toLowerCase().includes(fVend)) {
-                const valC = paraNum(v.cartao);
-                const isBoleto = v.tipoPgto === "BOLETO" ? 1 : 0;
-                if (!totais[vend]) totais[vend] = { cartao: 0, boletos: 0 };
-                totais[vend].cartao += valC;
-                totais[vend].boletos += isBoleto;
-            }
-        });
-
-        const corpo = document.getElementById('corpoResumo');
-        corpo.innerHTML = "";
-        Object.keys(totais).sort().forEach(nome => {
-            const comissao = totais[nome].boletos * 20;
-            corpo.innerHTML += `<tr>
-                <td style="font-weight:bold">${nome}</td>
-                <td>R$ ${totais[nome].cartao.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                <td>${totais[nome].boletos} un.</td>
-                <td style="color:var(--success); font-weight:bold">R$ ${comissao.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-            </tr>`;
-        });
-    }
-
-    window.exportarExcel = () => {
-        let csv = "\ufeffData;Vendedor;Aluno;Pgto;Taxa;Boleto;Parcelas;Cartao;Curso;Cidade;UF\n";
-        vendasAtuais.forEach(v => {
-            const dataFmt = v.dataVenda.split('-').reverse().join('/');
-            csv += `${dataFmt};${v.vendedor};${v.aluno};${v.tipoPgto};${v.taxa};${v.boleto};${v.parcelas};${v.cartao};${v.curso};${v.cidade};${v.estado}\n`;
-        });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        link.download = `Dados_Matriculas_2026.csv`;
-        link.click();
+    // VARIÁVEIS DE CONTROLE
+    let deleteId = null; let deleteCol = ""; let editId = null;
+    const coresMeses = { "Janeiro": "#f39c12", "Fevereiro": "#f1c40f", "Março": "#2ecc71", "Abril": "#3498db", "Maio": "#9b59b6", "Junho": "#e91e63", "Julho": "#ffc0cb", "Agosto": "#27ae60", "Setembro": "#2c3e50", "Outubro": "#8e44ad", "Novembro": "#2980b9", "Dezembro": "#7f8c8d" };
+    
+    // CONFIGURAÇÃO DOS TIMES (Com imagens dos prints)
+    const timesConfig = {
+        "ALFAS": { logo: "https://unifahe.edu.br/wp-content/uploads/2023/05/logo-unifahe-1.png", membros: ["Gabriel", "Laura", "Raissa", "Kevyn"] },
+        "INVICTUS": { logo: "https://unifahe.edu.br/wp-content/uploads/2023/05/logo-unifahe-1.png", membros: ["Beatriz", "Gabrielle Andrade", "Fabiana"] },
+        "GOAT": { logo: "https://unifahe.edu.br/wp-content/uploads/2023/05/logo-unifahe-1.png", membros: ["Giseli", "Bianca", "Letícia Vieira", "Lucas"] },
+        "TEAM WINX": { logo: "https://unifahe.edu.br/wp-content/uploads/2023/05/logo-unifahe-1.png", membros: ["Nathália", "Ana Flávia", "Washington"] }
     };
 
-    document.getElementById('vendaForm').addEventListener('submit', async (e) => {
+    // NAVEGAÇÃO
+    function entrar() { document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('mainPortal').style.display = 'block'; }
+    function home() { 
+        document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
+        document.getElementById('homePage').style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+    }
+    function abrir(s) {
+        home(); document.getElementById('homePage').style.display = 'none';
+        document.getElementById('sidebar').classList.add('active');
+        if(s === 'VENDAS') { document.getElementById('secaoVendas').style.display = 'block'; carregarVendas(); }
+        if(s === 'TIMES') { document.getElementById('secaoTimes').style.display = 'block'; carregarTimes(); }
+        if(s === 'INDIQUE') { document.getElementById('secaoIndique').style.display = 'block'; carregarIndique(); }
+        if(s === 'DIARIO') { document.getElementById('secaoDiario').style.display = 'block'; carregarDiario(); }
+        if(s === 'FERIAS') { document.getElementById('secaoFerias').style.display = 'block'; carregarFerias(); }
+    }
+
+    // --- LÓGICA VENDAS ---
+    document.getElementById('vendaForm').onsubmit = async (e) => {
         e.preventDefault();
-        const dados = {
-            dataVenda: document.getElementById('dataVenda').value,
-            vendedor: document.getElementById('vendedor').value,
-            aluno: document.getElementById('aluno').value,
-            tipoPgto: document.getElementById('tipoPgto').value,
-            taxa: document.getElementById('taxa').value,
-            boleto: document.getElementById('boleto').value,
-            parcelas: document.getElementById('parcelas').value,
-            cartao: document.getElementById('cartao').value,
-            curso: document.getElementById('curso').value,
-            cidade: document.getElementById('cidade').value,
-            estado: document.getElementById('estado').value,
-            dataRef: firebase.firestore.FieldValue.serverTimestamp()
+        const d = {
+            dataVenda: document.getElementById('f_data').value,
+            vendedor: document.getElementById('f_vendedor').value,
+            aluno: document.getElementById('f_aluno').value,
+            tipo: document.getElementById('f_tipo').value,
+            taxa: document.getElementById('f_taxa').value,
+            cartao: document.getElementById('f_cartao').value,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
         };
-        if (editId) {
-            await db.collection("vendas").doc(editId).update(dados);
-            editId = null;
-            document.getElementById('btnSalvar').innerText = "CONFIRMAR REGISTRO ACADÊMICO";
-        } else {
-            await db.collection("vendas").add(dados);
-        }
+        await db.collection("vendas").add(d);
         e.target.reset();
-        document.getElementById('dataVenda').valueAsDate = new Date();
-    });
-
-    window.prepararEdicao = (id, json) => {
-        editId = id;
-        const d = JSON.parse(decodeURIComponent(json));
-        document.getElementById('dataVenda').value = d.dataVenda;
-        document.getElementById('vendedor').value = d.vendedor;
-        document.getElementById('aluno').value = d.aluno;
-        document.getElementById('tipoPgto').value = d.tipoPgto;
-        document.getElementById('taxa').value = d.taxa;
-        document.getElementById('boleto').value = d.boleto;
-        document.getElementById('parcelas').value = d.parcelas;
-        document.getElementById('cartao').value = d.cartao;
-        document.getElementById('curso').value = d.curso;
-        document.getElementById('cidade').value = d.cidade;
-        document.getElementById('estado').value = d.estado;
-        document.getElementById('btnSalvar').innerText = "ATUALIZAR DADOS";
-        openTab('tab-vendas');
     };
 
-    window.excluirVenda = async (id) => { if(confirm("Excluir permanentemente?")) await db.collection("vendas").doc(id).delete(); };
-
-    db.collection("vendas").orderBy("dataRef", "desc").onSnapshot((snap) => {
-        vendasAtuais = [];
-        snap.forEach(doc => {
-            const v = doc.data();
-            v.idDoc = doc.id;
-            vendasAtuais.push(v);
+    function carregarVendas() {
+        db.collection("vendas").orderBy("criadoEm", "desc").onSnapshot(snap => {
+            const t = document.querySelector("#tabVendas tbody"); t.innerHTML = "";
+            snap.forEach(doc => {
+                const v = doc.data(); const total = parseFloat(v.taxa || 0) + parseFloat(v.cartao || 0);
+                t.innerHTML += `<tr><td>${v.dataVenda}</td><td>${v.vendedor}</td><td>${v.aluno}</td><td>R$ ${total.toFixed(2)}</td>
+                <td><button onclick="prepararEdicaoVenda('${doc.id}')" style="color:blue;border:none;background:none;cursor:pointer">Alterar</button>
+                <button onclick="preExcluir('${doc.id}', 'vendas')" style="color:red;border:none;background:none;cursor:pointer;margin-left:8px">X</button></td></tr>`;
+            });
         });
-        renderizarTabelaVendas();
-        atualizarResumo();
-    });
+    }
+
+    async function prepararEdicaoVenda(id) {
+        editId = id; const v = (await db.collection("vendas").doc(id).get()).data();
+        document.getElementById('f_data').value = v.dataVenda; document.getElementById('f_vendedor').value = v.vendedor;
+        document.getElementById('f_aluno').value = v.aluno; document.getElementById('f_tipo').value = v.tipo;
+        document.getElementById('f_taxa').value = v.taxa; document.getElementById('f_cartao').value = v.cartao;
+        document.getElementById('btnSalvarVenda').style.display = 'none'; document.getElementById('btnUpdateVenda').style.display = 'block';
+    }
+
+    document.getElementById('btnUpdateVenda').onclick = async () => {
+        await db.collection("vendas").doc(editId).update({
+            dataVenda: document.getElementById('f_data').value, vendedor: document.getElementById('f_vendedor').value,
+            aluno: document.getElementById('f_aluno').value, tipo: document.getElementById('f_tipo').value,
+            taxa: document.getElementById('f_taxa').value, cartao: document.getElementById('f_cartao').value
+        });
+        document.getElementById('vendaForm').reset(); document.getElementById('btnSalvarVenda').style.display = 'block'; document.getElementById('btnUpdateVenda').style.display = 'none';
+    };
+
+    // --- LÓGICA TIMES ---
+    function carregarTimes() {
+        db.collection("vendas").onSnapshot(snap => {
+            const grid = document.getElementById('gridTimes'); grid.innerHTML = "";
+            let vendMap = {}; let totalGeral = 0;
+            snap.forEach(d => { 
+                const v = d.data(); const val = (parseFloat(v.taxa || 0) + parseFloat(v.cartao || 0));
+                vendMap[v.vendedor] = (vendMap[v.vendedor] || 0) + val; totalGeral += val;
+            });
+            for (let t in timesConfig) {
+                let somaT = 0; let mHtml = "";
+                timesConfig[t].membros.forEach(m => { let v = vendMap[m] || 0; somaT += v; mHtml += `<div class="vendedor-linha"><span>${m}</span><b>R$ ${v.toFixed(2)}</b></div>`; });
+                grid.innerHTML += `<div class="time-card"><div class="time-header"><img src="${timesConfig[t].logo}" class="time-logo"><h3>${t}</h3></div><div style="padding:15px">${mHtml}<div style="text-align:right; margin-top:10px; color:var(--unifahe-orange); font-weight:bold">TOTAL: R$ ${somaT.toFixed(2)}</div></div></div>`;
+            }
+            document.getElementById('totalGeralSistema').innerText = `R$ ${totalGeral.toFixed(2)}`;
+        });
+    }
+
+    // --- LÓGICA DIÁRIO ---
+    function carregarDiario() {
+        const hoje = new Date().toISOString().split('T')[0];
+        document.getElementById('labelDataHoje').innerText = hoje.split('-').reverse().join('/');
+        db.collection("vendas").where("dataVenda", "==", hoje).onSnapshot(snap => {
+            const grid = document.getElementById('gridDiario'); grid.innerHTML = "";
+            let diarioMap = {};
+            snap.forEach(doc => {
+                const v = doc.data(); if(!diarioMap[v.vendedor]) diarioMap[v.vendedor] = { list: [], total: 0 };
+                const totalV = parseFloat(v.taxa || 0) + parseFloat(v.cartao || 0);
+                diarioMap[v.vendedor].list.push({ aluno: v.aluno, valor: totalV });
+                diarioMap[v.vendedor].total += totalV;
+            });
+            for(let vend in diarioMap) {
+                let vHtml = ""; diarioMap[vend].list.forEach(i => { vHtml += `<div class="venda-item"><span>${i.aluno}</span><b>R$ ${i.valor.toFixed(2)}</b></div>`; });
+                grid.innerHTML += `<div class="diario-vendedor-box"><div class="diario-header"><span>${vend}</span><span>${diarioMap[vend].list.length} Mat.</span></div>${vHtml}<div style="text-align:right; font-weight:bold; color:var(--unifahe-orange); margin-top:10px">HOJE: R$ ${diarioMap[vend].total.toFixed(2)}</div></div>`;
+            }
+            if(snap.empty) grid.innerHTML = "<p style='text-align:center; grid-column:1/-1; color:#999'>Nenhuma venda hoje.</p>";
+        });
+    }
+
+    // --- LÓGICA INDIQUE ---
+    document.getElementById('indiqueForm').onsubmit = async (e) => {
+        e.preventDefault();
+        await db.collection("indicacoes").add({
+            vendedor: document.getElementById('ind_vendedor').value, indicador: document.getElementById('ind_nome').value,
+            pix: document.getElementById('ind_pix').value, aluno: document.getElementById('ind_aluno').value,
+            status: document.getElementById('ind_status').value, criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        e.target.reset();
+    };
+
+    function carregarIndique() {
+        db.collection("indicacoes").onSnapshot(snap => {
+            const t = document.querySelector("#tabIndique tbody"); t.innerHTML = "";
+            snap.forEach(doc => {
+                const i = doc.data();
+                t.innerHTML += `<tr><td>${i.vendedor}</td><td>${i.indicador}</td><td>${i.aluno}</td><td>${i.status}</td>
+                <td><button onclick="preExcluir('${doc.id}', 'indicacoes')" style="color:red;border:none;background:none;cursor:pointer">X</button></td></tr>`;
+            });
+        });
+    }
+
+    // --- LÓGICA FÉRIAS ---
+    document.getElementById('feriasForm').onsubmit = async (e) => {
+        e.preventDefault();
+        await db.collection("ferias").add({
+            colaborador: document.getElementById('fer_nome').value, admissao: document.getElementById('fer_adm').value,
+            limite: document.getElementById('fer_limite').value, pretensao: document.getElementById('fer_mes').value,
+            dias: document.getElementById('fer_dias').value
+        });
+        e.target.reset();
+    };
+
+    function carregarFerias() {
+        db.collection("ferias").onSnapshot(snap => {
+            const t = document.querySelector("#tabFerias tbody"); t.innerHTML = "";
+            snap.forEach(doc => {
+                const f = doc.data(); const cor = coresMeses[f.pretensao] || "#ddd";
+                t.innerHTML += `<tr><td>${f.colaborador}</td><td>${f.admissao}</td><td>${f.limite}</td>
+                <td><span class="mes-tag" style="background:${cor}">${f.pretensao}</span></td><td>${f.dias}</td>
+                <td><button onclick="preExcluir('${doc.id}', 'ferias')" style="color:red;border:none;background:none;cursor:pointer">X</button></td></tr>`;
+            });
+        });
+    }
+
+    // --- MODAL EXCLUIR ---
+    function preExcluir(id, col) { deleteId = id; deleteCol = col; document.getElementById('modalGestor').style.display = 'flex'; }
+    function fecharModal() { document.getElementById('modalGestor').style.display = 'none'; document.getElementById('senhaGestor').value = ''; }
+    document.getElementById('confirmaDel').onclick = async () => {
+        if(document.getElementById('senhaGestor').value === '123') {
+            await db.collection(deleteCol).doc(deleteId).delete(); fecharModal();
+        } else { alert("SENHA INCORRETA"); }
+    };
 </script>
 </body>
 </html>
